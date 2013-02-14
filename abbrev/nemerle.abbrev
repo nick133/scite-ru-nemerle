@@ -1,0 +1,35 @@
+# Nemerle Abbreviations
+
+#Code Snippets
+ss=$"|$"
+sss=@"|"
+us=using |;
+using=using (def | = )\n{\n\t;\n}\n
+de=def | = ;
+def=def |() : void\n{\n\t;\n}\n
+mut=mutable | = ;
+arr=array[|]
+li=list[|]
+hash=| : Hashtable[string, object] = Hashtable() <-\n[\n\t"" = "",\n\t"" = "",\n];\n
+match=match (|)\n{\n\t| => {}\n}\n
+if=if (|)\n{\n\t\n}\nelse\n{\n\t;\n}\n
+when=when (|)\n{\n\t\n}\n
+unless=unless (|)\n{\n\t\n}\n
+do=do {\n\t|;\n} while (true);\n
+while=while (true)\n{\n\t|;\n}\n
+for=for (mutable i = 0; i < |; i++)\n{\n\t;\n}\n
+fore=foreach (| in )\n{\n\t;\n}\n
+try=try\n{\n\t|;\n}\ncatch\n{\n\te is {}\n}\n\n
+nam=namespace |\n{\n\t\n}\n
+main=Main(_args : array[string]) : void\n{\n\t|;\n}\n
+int=public interface |\n{\n\tpublic Method1() : void;\n}\n
+intp=private interface |\n{\n\tpublic Method1() : void;\n}\n
+mod=public module |\n{\n\t\n\tpublic Method1() : void\n{\n\t;\n}\n}\n
+modp=private module |\n{\n\t\n\tpublic Method1() : void\n{\n\t;\n}\n}\n
+cla=public class |\n{\n\t\n\tpublic this() : void\n\t{\n\t\t;\n\t}\n}\n
+clap=private class |\n{\n\t\n\tpublic this() : void\n\t{\n\t\t;\n\t}\n}\n
+pub=public |() : void\n{\n\t;\n}\n
+pri=private _|() : void\n{\n\t;\n}\n
+pubs=public static |() : void\n{\n\t;\n}\n
+pris=private static _|() : void\n{\n\t;\n}\n
+ret=return:\n{\n\t|;\n}\n
