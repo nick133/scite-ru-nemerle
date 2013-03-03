@@ -1,7 +1,7 @@
 --[[--------------------------------------------------
 SideBar.lua
-Authors: Frank Wunderlich, mozers™, VladVRO, frs, BioInfo, Tymur Gubayev, ur4ltz
-Version 1.27.15
+Authors: Frank Wunderlich, mozers™, VladVRO, frs, BioInfo, Tymur Gubayev, ur4ltz, nicksabaka
+Version 1.28.1
 ------------------------------------------------------
   Note: Require gui.dll <http://scite-ru.googlecode.com/hg/lualib/gui/>
                lpeg.dll <http://scite-ru.googlecode.com/hg/lualib/lpeg/>
@@ -126,7 +126,7 @@ if colorback then memo_path:set_memo_colour('', colorback) end
 local list_dir_height = win_height/3
 if list_dir_height <= 0 then list_dir_height = 200 end
 local list_favorites = gui.list(true)
-list_favorites:add_column("Избранное", 600)
+list_favorites:add_column(scite.GetTranslation("Favorites"), 600)
 tab0:add(list_favorites, "bottom", list_dir_height)
 if colorback then list_favorites:set_list_colour(colorfore,colorback) end
 
@@ -162,12 +162,12 @@ local list_func_height = win_height/3
 if list_func_height <= 0 then list_func_height = 200 end
 local list_bookmarks = gui.list(true)
 list_bookmarks:add_column("@", 24)
-list_bookmarks:add_column("Закладки", 600)
+list_bookmarks:add_column(scite.GetTranslation("Bookmarks"), 600)
 tab1:add(list_bookmarks, "bottom", list_func_height)
 if colorback then list_bookmarks:set_list_colour(colorfore,colorback) end
 
 local list_func = gui.list(true)
-list_func:add_column("Функции/Процедуры", 600)
+list_func:add_column(scite.GetTranslation("Functions/Procedures"), 600)
 tab1:client(list_func)
 if colorback then list_func:set_list_colour(colorfore,colorback) end
 
@@ -181,8 +181,8 @@ list_func:context_menu {
 local tab2 = gui.panel(panel_width)
 
 local list_abbrev = gui.list(true)
-list_abbrev:add_column("Сокращ.", 60)
-list_abbrev:add_column("Расширено", 600)
+list_abbrev:add_column(scite.GetTranslation("Abbrev"), 60)
+list_abbrev:add_column(scite.GetTranslation("Expansion"), 600)
 tab2:client(list_abbrev)
 if colorback then list_abbrev:set_list_colour(colorfore,colorback) end
 
@@ -197,9 +197,9 @@ else
 end
 
 local tabs = gui.tabbar(win_parent)
-tabs:add_tab("Файлы", tab0)
-tabs:add_tab("Функ/Изб", tab1)
-tabs:add_tab("Сокр", tab2)
+tabs:add_tab(scite.GetTranslation("FileMan"), tab0)
+tabs:add_tab(scite.GetTranslation("Func/Bmk"), tab1)
+tabs:add_tab(scite.GetTranslation("Abbrev"), tab2)
 win_parent:client(tab2)
 win_parent:client(tab1)
 win_parent:client(tab0)
@@ -848,16 +848,27 @@ do
 
 	do --v----- Nemerle ------v--
 		local IGNORED = SC
-		local op = P'if'+P'else'+P'switch'+P'case'+P'while'+P'for'+P'foreach'+P'try'+P'catch'+P'match'+P'when'+P'throw'
-		local nokeyword = -(op)
-		local mod = P'public'+P'private'+P'static'+P'virtual'+P'def'+'new'
+		local keywords = P'if'+P'else'+P'unless'+P'finally'+P'while'+P'for'+P'foreach'+P'try'+P'catch'+P'match'+P'when'+P'throw'+P'do'
+		local nokeyword = -(keywords)
+		local mod = P'public'+P'private'+P'static'+P'virtual'+P'def'+P'new'
 		local funcbody = P"{"*(ESCANY-P"}")^0*P"}"
 
-		local I = C(IDENTIFIER)*cl
-		local type = IDENTIFIER*(P'.'*IDENTIFIER)^0
-		local req = P'requires'*SPACE*(AZ+SPACE+R'09'+S'.,?!=></[]-+()*&^%$#@')^1
+		local I = nokeyword*C(IDENTIFIER)*cl
 
-		local method = nokeyword*Ct(mod*SPACE*I*SPACE^0*par)*(SPACE^0*P':'*SPACE^0*type)^0*SC^0*req^0*(#funcbody)
+		local typ = IDENTIFIER*(P'.'*IDENTIFIER)^0
+		-- распознаем tuples в типе возвращаемом методом/функцией
+		local tuple = typ*(SPACE^0*P'*'*SPACE^0*typ)^1
+		local tot = tuple+typ
+		-- распознаем коллекции/словари в возвращаемом типе
+		local ar = typ*SPACE^0*P'['*SPACE^0*((tot*SPACE^0*P','*SPACE^0)^0*(tot*SPACE^0))^0*P']'
+		local arr = typ*SPACE^0*P'['*SPACE^0*(((ar+tot)*SPACE^0*P','*SPACE^0)^0*((ar+tot)*SPACE^0))^0*P']'
+		local type = arr+tot
+		-- распознаем контракт метода
+		local req = (P'requires'+P'ensures')*SPACE*(AZ+SPACE+R'09'+S'.,?!=></[]-+()*&^%$#@')^1
+
+		-- методы/функции
+		local method = nokeyword*Ct((mod*SPACE)^0*I*SPACE^0*par)*(SPACE^0*P':'*SPACE^0*type)^0*SC^0*req^0*(#funcbody)
+		-- декларации методов интерфейсов
 		local ifmethod = nokeyword*Ct((P'new'*SPACE)^0*I*SPACE^0*par)*SPACE^0*P':'*SPACE^0*type*SPACE^0*P';'
 
 		local patt = (method + ifmethod + IGNORED^1 + IDENTIFIER + ANY)^0 * EOF
